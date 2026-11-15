@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  verify:
+    name: Pruebas (100%), Compilación y Compodoc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas unitarias con cobertura al 100%
+        run: npm run test:coverage
+
+      - name: Compilar librería en producción
+        run: npm run build:lib
+
+      - name: Generar documentación técnica con Compodoc
+        run: npm run compodoc
+
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/uceva-storage-manager
+
+      - name: Subir documentación Compodoc
+        uses: actions/upload-artifact@v4
+        with:
+          name: compodoc-docs
+          path: docs/compodoc
