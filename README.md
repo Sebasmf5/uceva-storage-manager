@@ -11,9 +11,8 @@ Workspace Angular del proyecto **UCEVA Storage Manager**, que contiene la librer
 
 ## Integrantes
 
-- Nombre completo del integrante 1
-- Nombre completo del integrante 2
-- Nombre completo del integrante 3
+- Sebastian Morales
+- Juan Camilo Suarez
 
 ---
 
