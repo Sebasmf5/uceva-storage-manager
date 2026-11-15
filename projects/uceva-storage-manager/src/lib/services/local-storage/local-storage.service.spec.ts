@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { isQuotaExceededError } from '../core/storage-utils';
-import { StorageError } from '../models/storage.models';
+import { StorageError } from '../../errors';
+import { isQuotaExceededError } from '../../internal/storage-utils';
 import { LocalStorageService } from './local-storage.service';
 
 interface UserProfile {

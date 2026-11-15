@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
+import { StorageError } from '../../errors';
+import { ICacheStorageService } from '../../interfaces';
 import {
   assertValidCacheName,
   assertValidRequest,
   getNativeCacheStorage,
   wrapCacheError,
-} from '../core/cache-utils';
-import { deserializeValue, serializeValue } from '../core/storage-utils';
-import { ICacheStorageService } from '../core/interfaces/cache-storage.interface';
-import { StorageError } from '../models/storage.models';
+} from '../../internal/cache-utils';
+import { deserializeValue, serializeValue } from '../../internal/storage-utils';
 
 /**
  * Servicio Angular para administrar cachés y recursos HTTP mediante la API

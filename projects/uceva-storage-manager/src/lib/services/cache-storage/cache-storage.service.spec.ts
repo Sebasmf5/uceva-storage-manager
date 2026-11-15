@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { StorageError } from '../models/storage.models';
+import { StorageError } from '../../errors';
 import { CacheStorageService } from './cache-storage.service';
 
 interface MockResponse {

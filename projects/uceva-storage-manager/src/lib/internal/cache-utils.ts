@@ -1,4 +1,4 @@
-import { StorageError } from '../models/storage.models';
+import { StorageError } from '../errors';
 
 /**
  * Obtiene la referencia nativa a `caches` (Cache Storage API) verificando su disponibilidad.

@@ -1,4 +1,4 @@
-import { StorageError } from '../models/storage.models';
+import { StorageError } from '../errors';
 
 /**
  * Valida que una clave de almacenamiento sea una cadena no vacía.

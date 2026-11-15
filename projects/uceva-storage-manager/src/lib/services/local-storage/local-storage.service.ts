@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
+import { StorageError } from '../../errors';
+import { ILocalStorageService } from '../../interfaces';
 import {
   buildPrefixedKey,
   deserializeValue,
   getNativeLocalStorage,
   isQuotaExceededError,
   serializeValue,
-} from '../core/storage-utils';
-import {
-  ILocalStorageService,
-  LocalStorageOptions,
-} from '../core/interfaces/local-storage.interface';
-import { StorageError } from '../models/storage.models';
+} from '../../internal/storage-utils';
+import { LocalStorageOptions } from '../../models';
 
 /**
  * Servicio Angular para gestionar el almacenamiento persistente en `LocalStorage`
