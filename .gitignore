@@ -42,3 +42,13 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+
+# Reglas explícitas de workspace y showcase
+node_modules/
+.angular/
+dist/
+coverage/
+showcase/node_modules/
+showcase/dist/
+showcase/.angular/
