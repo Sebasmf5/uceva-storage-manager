@@ -6,6 +6,7 @@ import {
   wrapCacheError,
 } from '../core/cache-utils';
 import { deserializeValue, serializeValue } from '../core/storage-utils';
+import { ICacheStorageService } from '../core/interfaces/cache-storage.interface';
 import { StorageError } from '../models/storage.models';
 
 /**
@@ -15,7 +16,7 @@ import { StorageError } from '../models/storage.models';
 @Injectable({
   providedIn: 'root',
 })
-export class CacheStorageService {
+export class CacheStorageService implements ICacheStorageService {
   /**
    * Abre (o crea si no existe) una caché con el nombre indicado.
    *

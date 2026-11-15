@@ -6,7 +6,11 @@ import {
   isQuotaExceededError,
   serializeValue,
 } from '../core/storage-utils';
-import { LocalStorageOptions, StorageError } from '../models/storage.models';
+import {
+  ILocalStorageService,
+  LocalStorageOptions,
+} from '../core/interfaces/local-storage.interface';
+import { StorageError } from '../models/storage.models';
 
 /**
  * Servicio Angular para gestionar el almacenamiento persistente en `LocalStorage`
@@ -15,7 +19,7 @@ import { LocalStorageOptions, StorageError } from '../models/storage.models';
 @Injectable({
   providedIn: 'root',
 })
-export class LocalStorageService {
+export class LocalStorageService implements ILocalStorageService {
   /**
    * Almacena un valor primitivo u objeto en `LocalStorage` serializándolo como JSON.
    *
