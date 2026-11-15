@@ -198,6 +198,14 @@ describe('CacheStorageService', () => {
       expect(await service.deleteEntry('datos', '/uno')).toBe(false);
       expect(await service.listEntries('datos')).toEqual(['/dos']);
     });
+
+    it('no debe crear cachés cuando se consultan o eliminan entradas de una caché inexistente', async () => {
+      expect(await service.match('no-existe', '/recurso')).toBeUndefined();
+      expect(await service.matchJson('no-existe', '/recurso')).toBeNull();
+      expect(await service.listEntries('no-existe')).toEqual([]);
+      expect(await service.deleteEntry('no-existe', '/recurso')).toBe(false);
+      expect(await service.listCaches()).toEqual([]);
+    });
   });
 
   describe('manejo de errores', () => {
@@ -242,6 +250,7 @@ describe('CacheStorageService', () => {
         delete: jest.fn().mockRejectedValue(new Error('delete fail')),
       } as unknown as Cache;
 
+      jest.spyOn(mockCacheStorage, 'has').mockResolvedValue(true);
       jest.spyOn(mockCacheStorage, 'open').mockResolvedValue(failingCache);
       await expect(
         service.put('c', '/x', createMockResponse('a') as unknown as Response),
@@ -258,9 +267,15 @@ describe('CacheStorageService', () => {
 
       jest.spyOn(mockCacheStorage, 'open').mockRejectedValue(new Error('open fail'));
       await expect(service.openCache('c')).rejects.toMatchObject({ code: 'CACHE_OPERATION_ERROR' });
+      await expect(service.match('c', '/x')).rejects.toMatchObject({
+        code: 'CACHE_OPERATION_ERROR',
+      });
 
       jest.spyOn(mockCacheStorage, 'has').mockRejectedValue(new Error('has fail'));
       await expect(service.hasCache('c')).rejects.toMatchObject({ code: 'CACHE_OPERATION_ERROR' });
+      await expect(service.listEntries('c')).rejects.toMatchObject({
+        code: 'CACHE_OPERATION_ERROR',
+      });
 
       jest.spyOn(mockCacheStorage, 'keys').mockRejectedValue(new Error('keys fail'));
       await expect(service.listCaches()).rejects.toMatchObject({ code: 'CACHE_OPERATION_ERROR' });

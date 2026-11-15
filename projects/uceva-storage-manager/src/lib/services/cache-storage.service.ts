@@ -34,6 +34,27 @@ export class CacheStorageService {
   }
 
   /**
+   * Abre una caché únicamente si ya existe en `Cache Storage`, sin crearla.
+   *
+   * @param cacheName Nombre identificador de la caché.
+   * @returns Promesa con la instancia de {@link Cache} o `null` si no existe.
+   * @throws {StorageError} Si el nombre es inválido o `Cache Storage` falla.
+   */
+  private async openExistingCache(cacheName: string): Promise<Cache | null> {
+    const validName = assertValidCacheName(cacheName);
+    const cacheStorage = getNativeCacheStorage();
+    try {
+      const exists = await cacheStorage.has(validName);
+      if (!exists) {
+        return null;
+      }
+      return await cacheStorage.open(validName);
+    } catch (error) {
+      throw wrapCacheError(`No fue posible acceder a la caché "${validName}".`, error);
+    }
+  }
+
+  /**
    * Verifica si existe una caché con el nombre especificado.
    *
    * @param cacheName Nombre de la caché a consultar.
@@ -65,6 +86,7 @@ export class CacheStorageService {
 
   /**
    * Almacena una respuesta HTTP asociada a una solicitud o URL dentro de la caché indicada.
+   * Si la caché no existe, la crea automáticamente.
    *
    * @param cacheName Nombre de la caché destino.
    * @param request Solicitud o URL clave del recurso.
@@ -89,6 +111,7 @@ export class CacheStorageService {
 
   /**
    * Serializa un valor JSON y lo almacena como una respuesta HTTP en la caché indicada.
+   * Si la caché no existe, la crea automáticamente.
    *
    * @typeParam T Tipo del dato a almacenar.
    * @param cacheName Nombre de la caché destino.
@@ -118,12 +141,12 @@ export class CacheStorageService {
   }
 
   /**
-   * Busca una respuesta HTTP almacenada en la caché indicada.
+   * Busca una respuesta HTTP almacenada en la caché indicada sin crear la caché si no existe.
    *
    * @param cacheName Nombre de la caché a consultar.
    * @param request Solicitud o URL del recurso buscado.
    * @param options Opciones opcionales de coincidencia {@link CacheQueryOptions}.
-   * @returns Promesa con la {@link Response} encontrada o `undefined` si no existe.
+   * @returns Promesa con la {@link Response} encontrada, o `undefined` si el recurso o la caché no existen.
    */
   async match(
     cacheName: string,
@@ -131,7 +154,10 @@ export class CacheStorageService {
     options?: CacheQueryOptions,
   ): Promise<Response | undefined> {
     const validRequest = assertValidRequest(request);
-    const cache = await this.openCache(cacheName);
+    const cache = await this.openExistingCache(cacheName);
+    if (!cache) {
+      return undefined;
+    }
     try {
       return await cache.match(validRequest, options);
     } catch (error) {
@@ -143,13 +169,13 @@ export class CacheStorageService {
   }
 
   /**
-   * Busca un recurso almacenado en caché y deserializa su cuerpo JSON.
+   * Busca un recurso almacenado en caché y deserializa su cuerpo JSON, sin crear la caché si no existe.
    *
    * @typeParam T Tipo esperado del objeto JSON almacenado.
    * @param cacheName Nombre de la caché a consultar.
    * @param request Solicitud o URL del recurso buscado.
    * @param options Opciones opcionales de coincidencia {@link CacheQueryOptions}.
-   * @returns Promesa con el valor deserializado o `null` si el recurso no está en caché.
+   * @returns Promesa con el valor deserializado, o `null` si el recurso o la caché no existen.
    * @throws {StorageError} Con código `DESERIALIZATION_ERROR` si el cuerpo no es JSON válido.
    */
   async matchJson<T>(
@@ -167,13 +193,16 @@ export class CacheStorageService {
   }
 
   /**
-   * Lista las URLs de todos los recursos almacenados dentro de una caché.
+   * Lista las URLs de todos los recursos almacenados dentro de una caché, sin crearla si no existe.
    *
    * @param cacheName Nombre de la caché a inspeccionar.
-   * @returns Promesa con el arreglo de URLs almacenadas.
+   * @returns Promesa con el arreglo de URLs almacenadas, o `[]` si la caché no existe.
    */
   async listEntries(cacheName: string): Promise<string[]> {
-    const cache = await this.openCache(cacheName);
+    const cache = await this.openExistingCache(cacheName);
+    if (!cache) {
+      return [];
+    }
     try {
       const requests = await cache.keys();
       return requests.map((req) => req.url);
@@ -186,12 +215,12 @@ export class CacheStorageService {
   }
 
   /**
-   * Elimina un recurso específico de la caché indicada.
+   * Elimina un recurso específico de la caché indicada, sin crear la caché si no existe.
    *
    * @param cacheName Nombre de la caché.
    * @param request Solicitud o URL del recurso a eliminar.
    * @param options Opciones opcionales de coincidencia {@link CacheQueryOptions}.
-   * @returns Promesa con `true` si el recurso existía y fue eliminado; `false` en caso contrario.
+   * @returns Promesa con `true` si el recurso existía y fue eliminado; `false` si el recurso o la caché no existen.
    */
   async deleteEntry(
     cacheName: string,
@@ -199,7 +228,10 @@ export class CacheStorageService {
     options?: CacheQueryOptions,
   ): Promise<boolean> {
     const validRequest = assertValidRequest(request);
-    const cache = await this.openCache(cacheName);
+    const cache = await this.openExistingCache(cacheName);
+    if (!cache) {
+      return false;
+    }
     try {
       return await cache.delete(validRequest, options);
     } catch (error) {
