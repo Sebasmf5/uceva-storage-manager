@@ -3,6 +3,7 @@ import { StorageError } from '../models/storage.models';
 /**
  * Valida que una clave de almacenamiento sea una cadena no vacía.
  *
+ * @internal
  * @param key Clave a validar.
  * @returns La clave validada sin espacios extremos.
  * @throws {StorageError} Si la clave no es una cadena válida o está vacía.
@@ -17,6 +18,7 @@ export function assertValidKey(key: string): string {
 /**
  * Construye la clave final aplicando un prefijo opcional.
  *
+ * @internal
  * @param key Clave base ya validada.
  * @param prefix Prefijo opcional de espacio de nombres.
  * @returns Clave compuesta para almacenamiento.
@@ -32,6 +34,7 @@ export function buildPrefixedKey(key: string, prefix?: string): string {
 /**
  * Serializa un valor primitivo u objeto a formato JSON.
  *
+ * @internal
  * @typeParam T Tipo del valor a serializar.
  * @param value Valor a convertir en cadena JSON.
  * @returns Representación JSON del valor.
@@ -58,6 +61,7 @@ export function serializeValue<T>(value: T): string {
 /**
  * Deserializa una cadena JSON al tipo esperado.
  *
+ * @internal
  * @typeParam T Tipo esperado del valor deserializado.
  * @param raw Cadena JSON almacenada.
  * @returns Valor deserializado.
@@ -78,6 +82,7 @@ export function deserializeValue<T>(raw: string): T {
 /**
  * Determina si un error corresponde a una cuota de almacenamiento excedida.
  *
+ * @internal
  * @param error Error capturado al escribir en almacenamiento.
  * @returns `true` si el error corresponde a cuota excedida.
  */
@@ -96,6 +101,7 @@ export function isQuotaExceededError(error: unknown): boolean {
 /**
  * Obtiene la referencia nativa a `localStorage` verificando su disponibilidad.
  *
+ * @internal
  * @returns Instancia de {@link Storage} del navegador.
  * @throws {StorageError} Si `localStorage` no está disponible en el entorno actual.
  */

@@ -75,11 +75,15 @@ export class LocalStorageService {
    * Consulta un valor almacenado en `LocalStorage` y retorna un valor por defecto
    * cuando la clave no existe.
    *
+   * Nota: si la clave existe almacenada con el valor literal `null`, se considera
+   * "sin valor" y también retornará `defaultValue`. Para distinguir entre una clave
+   * inexistente y una clave cuyo valor es `null`, utilice {@link has}.
+   *
    * @typeParam T Tipo esperado del valor.
    * @param key Clave del registro a consultar.
-   * @param defaultValue Valor de respaldo a retornar si la clave no existe.
+   * @param defaultValue Valor de respaldo a retornar si la clave no existe o vale `null`.
    * @param options Opciones opcionales como prefijo de espacio de nombres.
-   * @returns El valor almacenado o `defaultValue` si la clave no existe.
+   * @returns El valor almacenado o `defaultValue` si la clave no existe o vale `null`.
    */
   getOrDefault<T>(key: string, defaultValue: T, options?: LocalStorageOptions): T {
     const value = this.get<T>(key, options);
@@ -89,12 +93,16 @@ export class LocalStorageService {
   /**
    * Actualiza un registro existente en `LocalStorage` aplicando una función transformadora.
    *
+   * Nota: si la clave existe pero su valor almacenado es `null`, se considera "sin valor"
+   * y lanzará `KEY_NOT_FOUND`. Para distinguir entre una clave inexistente y una clave
+   * con valor `null`, utilice {@link has}.
+   *
    * @typeParam T Tipo del valor almacenado.
    * @param key Clave del registro a actualizar.
    * @param updater Función que recibe el valor actual y retorna el nuevo valor.
    * @param options Opciones opcionales como prefijo de espacio de nombres.
    * @returns El nuevo valor almacenado tras la actualización.
-   * @throws {StorageError} Con código `KEY_NOT_FOUND` si la clave no existe previamente.
+   * @throws {StorageError} Con código `KEY_NOT_FOUND` si la clave no existe previamente o vale `null`.
    */
   update<T>(key: string, updater: (current: T) => T, options?: LocalStorageOptions): T {
     const current = this.get<T>(key, options);

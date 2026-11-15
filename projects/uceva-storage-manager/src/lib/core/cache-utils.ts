@@ -3,6 +3,7 @@ import { StorageError } from '../models/storage.models';
 /**
  * Obtiene la referencia nativa a `caches` (Cache Storage API) verificando su disponibilidad.
  *
+ * @internal
  * @returns Instancia de {@link CacheStorage} del navegador.
  * @throws {StorageError} Si Cache Storage no está disponible en el entorno actual.
  */
@@ -31,6 +32,7 @@ export function getNativeCacheStorage(): CacheStorage {
 /**
  * Valida que el nombre de una caché sea una cadena no vacía.
  *
+ * @internal
  * @param cacheName Nombre de la caché a validar.
  * @returns Nombre de caché normalizado sin espacios extremos.
  * @throws {StorageError} Con código `INVALID_CACHE_NAME` si el nombre es inválido.
@@ -48,6 +50,7 @@ export function assertValidCacheName(cacheName: string): string {
 /**
  * Valida que el identificador de recurso (`Request`, `URL` o cadena) sea válido.
  *
+ * @internal
  * @param request Recurso o URL a validar.
  * @returns El mismo recurso validado (o recortado si es cadena).
  * @throws {StorageError} Con código `INVALID_REQUEST` si el recurso es nulo o vacío.
@@ -68,6 +71,7 @@ export function assertValidRequest(request: RequestInfo | URL): RequestInfo | UR
 /**
  * Envuelve errores inesperados de operaciones de Cache Storage en un {@link StorageError}.
  *
+ * @internal
  * @param message Mensaje descriptivo de la operación fallida.
  * @param error Error original capturado.
  * @returns Instancia de {@link StorageError}.

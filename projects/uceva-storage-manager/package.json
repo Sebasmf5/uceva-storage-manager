@@ -1,6 +1,27 @@
 {
-  "name": "uceva-storage-manager",
-  "version": "0.0.1",
+  "name": "@TU_SCOPE_NPM/uceva-storage-manager",
+  "version": "1.0.0",
+  "description": "Librería Angular para gestionar LocalStorage y Cache Storage con una API tipada, serialización JSON y manejo de errores.",
+  "license": "MIT",
+  "author": "Juan Estevan Santiago",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sebasmf5/uceva-storage-manager.git"
+  },
+  "homepage": "https://github.com/Sebasmf5/uceva-storage-manager#readme",
+  "bugs": {
+    "url": "https://github.com/Sebasmf5/uceva-storage-manager/issues"
+  },
+  "keywords": [
+    "angular",
+    "localstorage",
+    "cache-storage",
+    "storage",
+    "uceva"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "@angular/common": "^20.3.0",
     "@angular/core": "^20.3.0"
