@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "analytics": false
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "uceva-storage-manager": {
+      "projectType": "library",
+      "root": "projects/uceva-storage-manager",
+      "sourceRoot": "projects/uceva-storage-manager/src",
+      "prefix": "usm",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/uceva-storage-manager/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/uceva-storage-manager/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/uceva-storage-manager/tsconfig.spec.json"
+          }
+        }
+      }
+    }
+  }
+}
