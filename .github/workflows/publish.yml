@@ -53,6 +53,28 @@ jobs:
       - name: Preparar sitio para GitHub Pages (docs y showcase)
         run: |
           mkdir -p _site/docs _site/showcase
+          cat << 'EOF' > _site/index.html
+          <!doctype html>
+          <html lang="es">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>UCEVA Storage Manager</title>
+            <style>
+              body { font-family: system-ui, sans-serif; max-width: 680px; margin: 4rem auto; padding: 0 1rem; color: #1e293b; }
+              a { display: inline-block; margin-right: 1rem; padding: .6rem 1.1rem; background: #0f172a; color: #fff; text-decoration: none; border-radius: 6px; }
+            </style>
+          </head>
+          <body>
+            <h1>@sebasmf/uceva-storage-manager</h1>
+            <p>Selecciona el recurso que deseas consultar:</p>
+            <p>
+              <a href="./showcase/">Abrir Showcase</a>
+              <a href="./docs/">Abrir Documentación (Compodoc)</a>
+            </p>
+          </body>
+          </html>
+          EOF
           cp -r docs/compodoc/* _site/docs/
           if [ -f "showcase/package.json" ]; then
             cd showcase
