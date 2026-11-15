@@ -1,0 +1,199 @@
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">&#64;sebasmf/uceva-storage-manager</p>
+    <h1>Storage Manager <span>Showcase</span></h1>
+    <p class="lead">
+      Prueba en vivo <code>LocalStorageService</code> y <code>CacheStorageService</code>,
+      consumidos directamente desde NPM.
+    </p>
+    <nav class="tabs" role="tablist" aria-label="Servicios">
+      <button role="tab" [attr.aria-selected]="tab() === 'local'" [class.active]="tab() === 'local'" (click)="selectTab('local')">
+        LocalStorage
+      </button>
+      <button role="tab" [attr.aria-selected]="tab() === 'cache'" [class.active]="tab() === 'cache'" (click)="selectTab('cache')">
+        Cache Storage
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <section class="panel-main">
+    @if (tab() === 'local') {
+      <div class="card">
+        <h2>Guardar y consultar</h2>
+        <div class="grid">
+          <label>Clave
+            <input [(ngModel)]="lsKey" name="lsKey" placeholder="usuario" />
+          </label>
+          <label>Prefijo (opcional)
+            <input [(ngModel)]="lsPrefix" name="lsPrefix" placeholder="demo" />
+          </label>
+          <label>Tipo de valor
+            <select [(ngModel)]="lsType" name="lsType">
+              <option value="text">Texto</option>
+              <option value="number">Número</option>
+              <option value="boolean">Booleano (true/false)</option>
+              <option value="json">JSON</option>
+            </select>
+          </label>
+          <label>Valor por defecto (getOrDefault)
+            <input [(ngModel)]="lsDefault" name="lsDefault" />
+          </label>
+          <label class="full">Valor
+            <textarea [(ngModel)]="lsValue" name="lsValue" rows="3"></textarea>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" (click)="lsSet()">set</button>
+          <button (click)="lsGet()">get</button>
+          <button (click)="lsGetOrDefault()">getOrDefault</button>
+          <button (click)="lsHas()">has</button>
+          <button (click)="lsUpdate()">update</button>
+          <button class="danger" (click)="lsRemove()">remove</button>
+          <button class="ghost" (click)="lsProvokeError()">Provocar error</button>
+        </div>
+        <p class="hint">
+          <code>update</code> modifica el valor existente (texto: añade sufijo, número: +1, booleano: invierte,
+          objeto: añade <code>actualizado</code>) y falla con <code>KEY_NOT_FOUND</code> si la clave no existe.
+        </p>
+        <h3>Resultado</h3>
+        <pre class="result">{{ lsResult() }}</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Contenido en vivo <small>{{ lsSize() }} clave(s)</small></h2>
+          <div class="inline">
+            <input [(ngModel)]="lsViewPrefix" name="lsViewPrefix" (ngModelChange)="refreshLocal()" placeholder="filtrar por prefijo" aria-label="Filtrar por prefijo" />
+            <button (click)="refreshLocal()">keys / size</button>
+          </div>
+        </div>
+        @if (lsRows().length === 0) {
+          <p class="empty">No hay claves. Guarda una con <code>set</code>.</p>
+        } @else {
+          <table>
+            <thead><tr><th>Clave</th><th>Valor</th><th></th></tr></thead>
+            <tbody>
+              @for (row of lsRows(); track row.key) {
+                <tr>
+                  <td class="mono">{{ row.key }}</td>
+                  <td><pre>{{ row.value }}</pre></td>
+                  <td><button class="mini danger" (click)="lsRemove(row.key, !lsViewPrefix.trim())">Eliminar</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        <div class="actions">
+          <button class="danger" (click)="lsClear(true)">clear(prefijo)</button>
+          <button class="danger" (click)="lsClear(false)">clear() todo</button>
+        </div>
+      </div>
+    } @else {
+      <div class="notice" [class.bad]="cacheBlocked()" role="note">
+        <strong>Requisito:</strong> Cache Storage solo funciona en contextos seguros
+        (<code>https://</code> o <code>localhost</code>).
+        @if (cacheBlocked()) {
+          Este contexto no es seguro o el navegador no expone <code>caches</code>: las operaciones
+          fallarán con <code>STORAGE_UNAVAILABLE</code>.
+        } @else {
+          El contexto actual es seguro: las operaciones están habilitadas.
+        }
+      </div>
+
+      <div class="card">
+        <h2>Cachés</h2>
+        <div class="grid">
+          <label>Nombre de la caché
+            <input [(ngModel)]="csName" name="csName" placeholder="demo-cache" />
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" (click)="csOpen()">openCache</button>
+          <button (click)="csHas()">hasCache</button>
+          <button (click)="csList()">listCaches</button>
+          <button (click)="csListEntries()">listEntries</button>
+          <button class="danger" (click)="csDeleteCache()">deleteCache</button>
+          <button class="danger" (click)="csClearAll()">clearAllCaches</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Entradas</h2>
+        <div class="grid">
+          <label class="full">URL / petición
+            <input [(ngModel)]="csUrl" name="csUrl" placeholder="/api/usuarios/1" />
+          </label>
+          <label>JSON (putJson)
+            <textarea [(ngModel)]="csJson" name="csJson" rows="3"></textarea>
+          </label>
+          <label>Texto (put con Response)
+            <textarea [(ngModel)]="csRaw" name="csRaw" rows="3"></textarea>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" (click)="csPutJson()">putJson</button>
+          <button class="primary" (click)="csPut()">put</button>
+          <button (click)="csMatch()">match</button>
+          <button (click)="csMatchJson()">matchJson</button>
+          <button class="danger" (click)="csDeleteEntry()">deleteEntry</button>
+          <button class="ghost" (click)="csProvokeError()">Provocar error</button>
+        </div>
+        <h3>Resultado</h3>
+        <pre class="result">{{ csResult() }}</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Cachés en vivo</h2>
+          <button (click)="refreshCaches()">Actualizar</button>
+        </div>
+        @if (caches().length === 0) {
+          <p class="empty">No hay cachés. Crea una con <code>openCache</code>.</p>
+        }
+        @for (c of caches(); track c.name) {
+          <div class="cache">
+            <div class="card-head">
+              <h3 class="mono">{{ c.name }} <small>{{ c.entries.length }} entrada(s)</small></h3>
+              <button class="mini danger" (click)="csDeleteCache(c.name)">Eliminar caché</button>
+            </div>
+            @for (url of c.entries; track url) {
+              <div class="entry">
+                <span class="mono">{{ url }}</span>
+                <button class="mini danger" (click)="csDeleteEntry(url, c.name)">Eliminar</button>
+              </div>
+            } @empty {
+              <p class="empty">Sin entradas.</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <aside class="panel-log">
+    <div class="card sticky">
+      <div class="card-head">
+        <h2>Consola de eventos</h2>
+        <button class="mini" (click)="clearLogs()">Limpiar</button>
+      </div>
+      <ul class="log" aria-live="polite">
+        @for (l of logs(); track l.id) {
+          <li [class]="l.level">
+            <span class="time">{{ l.time }}</span>
+            <span class="src">{{ l.source }}</span>
+            @if (l.code) {
+              <span class="code">{{ l.code }}</span>
+            }
+            <span class="msg">{{ l.message }}</span>
+          </li>
+        } @empty {
+          <li class="empty">Las operaciones y los <code>StorageError</code> aparecerán aquí.</li>
+        }
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<footer class="wrap foot">UCEVA Storage Manager · Showcase de la API pública</footer>
