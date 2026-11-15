@@ -1,0 +1,86 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish-and-build-pages:
+    name: Publicar en NPM y preparar GitHub Pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20 y registro NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Instalar dependencias de la librería
+        run: npm ci
+
+      - name: Ejecutar pruebas unitarias con cobertura al 100%
+        run: npm run test:coverage
+
+      - name: Compilar librería en producción
+        run: npm run build:lib
+
+      - name: Publicar paquete en NPM
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: dist/uceva-storage-manager
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Generar documentación Compodoc
+        run: npm run compodoc
+
+      - name: Preparar sitio para GitHub Pages (docs y showcase)
+        run: |
+          mkdir -p _site/docs _site/showcase
+          cp -r docs/compodoc/* _site/docs/
+          if [ -f "showcase/package.json" ]; then
+            cd showcase
+            npm ci
+            npx ng build --configuration production --base-href /uceva-storage-manager/showcase/
+            cp -r dist/showcase/browser/* ../_site/showcase/ 2>/dev/null || cp -r dist/*/browser/* ../_site/showcase/
+            cd ..
+          else
+            echo "<h1>UCEVA Storage Manager Showcase (en construcción)</h1>" > _site/showcase/index.html
+          fi
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir artefacto de GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy-pages:
+    name: Desplegar en GitHub Pages
+    needs: publish-and-build-pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Desplegar a GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
