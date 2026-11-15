@@ -1,5 +1,5 @@
 {
-  "name": "@TU_SCOPE_NPM/uceva-storage-manager",
+  "name": "@sebasmf/uceva-storage-manager",
   "version": "1.0.0",
   "description": "Librería Angular para gestionar LocalStorage y Cache Storage con una API tipada, serialización JSON y manejo de errores.",
   "license": "MIT",

@@ -1,4 +1,4 @@
-# UCEVA Storage Manager (`@TU_SCOPE_NPM/uceva-storage-manager`)
+# UCEVA Storage Manager (`@sebasmf/uceva-storage-manager`)
 
 Librería reutilizable para **Angular** orientada a facilitar la gestión del almacenamiento en aplicaciones web mediante **LocalStorage** y **Cache Storage**, con una API tipada, serialización JSON automática y manejo estandarizado de errores.
 
@@ -18,10 +18,8 @@ Librería reutilizable para **Angular** orientada a facilitar la gestión del al
 ## Instalación
 
 ```bash
-npm install @TU_SCOPE_NPM/uceva-storage-manager
+npm install @sebasmf/uceva-storage-manager
 ```
-
-> **Nota:** Reemplaza `@TU_SCOPE_NPM` por el scope de tu usuario u organización en NPM.
 
 ### Requisitos de compatibilidad
 
@@ -40,7 +38,7 @@ import {
   LocalStorageService,
   CacheStorageService,
   StorageError,
-} from '@TU_SCOPE_NPM/uceva-storage-manager';
+} from '@sebasmf/uceva-storage-manager';
 ```
 
 ---
@@ -63,7 +61,7 @@ import {
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { LocalStorageService, StorageError } from '@TU_SCOPE_NPM/uceva-storage-manager';
+import { LocalStorageService, StorageError } from '@sebasmf/uceva-storage-manager';
 
 interface Usuario {
   id: number;
@@ -122,7 +120,7 @@ export class EjemploLocalComponent {
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { CacheStorageService, StorageError } from '@TU_SCOPE_NPM/uceva-storage-manager';
+import { CacheStorageService, StorageError } from '@sebasmf/uceva-storage-manager';
 
 interface Curso {
   codigo: string;

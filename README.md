@@ -1,6 +1,6 @@
 # UCEVA Storage Manager
 
-Workspace Angular del proyecto **UCEVA Storage Manager**, que contiene la librería reutilizable `@TU_SCOPE_NPM/uceva-storage-manager` para la gestión tipada de `LocalStorage` y `Cache Storage` en aplicaciones web Angular.
+Workspace Angular del proyecto **UCEVA Storage Manager**, que contiene la librería reutilizable `@sebasmf/uceva-storage-manager` para la gestión tipada de `LocalStorage` y `Cache Storage` en aplicaciones web Angular.
 
 ---
 
@@ -32,7 +32,7 @@ uceva-storage-manager/
 Consulta la documentación detallada de instalación, API pública y ejemplos de código en [`projects/uceva-storage-manager/README.md`](./projects/uceva-storage-manager/README.md).
 
 ```bash
-npm install @TU_SCOPE_NPM/uceva-storage-manager
+npm install @sebasmf/uceva-storage-manager
 ```
 
 ---
