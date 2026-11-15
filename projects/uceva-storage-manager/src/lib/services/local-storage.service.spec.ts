@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { StorageError } from '../models/storage.models';
 import { isQuotaExceededError } from '../core/storage-utils';
+import { StorageError } from '../models/storage.models';
 import { LocalStorageService } from './local-storage.service';
 
 interface UserProfile {
@@ -11,6 +11,8 @@ interface UserProfile {
 
 describe('LocalStorageService', () => {
   let service: LocalStorageService;
+  const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const originalDOMExceptionDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'DOMException');
 
   beforeEach(() => {
     localStorage.clear();
@@ -20,6 +22,12 @@ describe('LocalStorageService', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(globalThis, 'localStorage', originalLocalStorageDescriptor);
+    }
+    if (originalDOMExceptionDescriptor) {
+      Object.defineProperty(globalThis, 'DOMException', originalDOMExceptionDescriptor);
+    }
     localStorage.clear();
   });
 
@@ -83,12 +91,9 @@ describe('LocalStorageService', () => {
 
     it('debe lanzar StorageError KEY_NOT_FOUND si la clave no existe', () => {
       expect(() => service.update<number>('no-existe', (v) => v + 1)).toThrow(StorageError);
-      try {
-        service.update<number>('no-existe', (v) => v + 1);
-      } catch (error) {
-        expect(error).toBeInstanceOf(StorageError);
-        expect((error as StorageError).code).toBe('KEY_NOT_FOUND');
-      }
+      expect(() => service.update<number>('no-existe', (v) => v + 1)).toThrow(
+        expect.objectContaining({ code: 'KEY_NOT_FOUND' }),
+      );
     });
   });
 
@@ -130,28 +135,33 @@ describe('LocalStorageService', () => {
 
   describe('manejo de errores', () => {
     it('debe lanzar INVALID_KEY cuando la clave está vacía o no es string', () => {
-      expect(() => service.set('', 'valor')).toThrow(StorageError);
-      expect(() => service.get('   ')).toThrow(StorageError);
-      expect(() => service.has(null as unknown as string)).toThrow(StorageError);
+      expect(() => service.set('', 'valor')).toThrow(
+        expect.objectContaining({ code: 'INVALID_KEY' }),
+      );
+      expect(() => service.get('   ')).toThrow(expect.objectContaining({ code: 'INVALID_KEY' }));
+      expect(() => service.has(null as unknown as string)).toThrow(
+        expect.objectContaining({ code: 'INVALID_KEY' }),
+      );
     });
 
     it('debe lanzar SERIALIZATION_ERROR para undefined o referencias circulares', () => {
-      expect(() => service.set('undef', undefined)).toThrow(StorageError);
+      expect(() => service.set('undef', undefined)).toThrow(
+        expect.objectContaining({ code: 'SERIALIZATION_ERROR' }),
+      );
 
       const circular: Record<string, unknown> = {};
       circular['self'] = circular;
-      expect(() => service.set('circ', circular)).toThrow(StorageError);
+      expect(() => service.set('circ', circular)).toThrow(
+        expect.objectContaining({ code: 'SERIALIZATION_ERROR' }),
+      );
     });
 
     it('debe lanzar DESERIALIZATION_ERROR si el JSON guardado está corrupto', () => {
       localStorage.setItem('corrupto', '{json-invalido');
-      try {
-        service.get('corrupto');
-        fail('Debió lanzar StorageError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(StorageError);
-        expect((error as StorageError).code).toBe('DESERIALIZATION_ERROR');
-      }
+      expect(() => service.get('corrupto')).toThrow(StorageError);
+      expect(() => service.get('corrupto')).toThrow(
+        expect.objectContaining({ code: 'DESERIALIZATION_ERROR' }),
+      );
     });
 
     it('debe lanzar QUOTA_EXCEEDED cuando setItem falla por cuota excedida', () => {
@@ -160,70 +170,77 @@ describe('LocalStorageService', () => {
         throw quotaError;
       });
 
-      try {
-        service.set('grande', 'data');
-        fail('Debió lanzar StorageError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(StorageError);
-        expect((error as StorageError).code).toBe('QUOTA_EXCEEDED');
-      }
+      expect(() => service.set('grande', 'data')).toThrow(StorageError);
+      expect(() => service.set('grande', 'data')).toThrow(
+        expect.objectContaining({ code: 'QUOTA_EXCEEDED' }),
+      );
     });
 
-    it('debe detectar otros formatos de cuota excedida y errores genéricos de escritura', () => {
+    it('debe detectar NS_ERROR_DOM_QUOTA_REACHED como error de cuota excedida', () => {
       const ffQuota = new DOMException('Quota', 'NS_ERROR_DOM_QUOTA_REACHED');
       expect(isQuotaExceededError(ffQuota)).toBe(true);
+    });
+
+    it('debe detectar error de cuota con código 22', () => {
       const code22Error = new DOMException('Quota');
       Object.defineProperty(code22Error, 'code', { value: 22 });
       expect(isQuotaExceededError(code22Error)).toBe(true);
+    });
+
+    it('debe detectar error de cuota con código 1014', () => {
       const code1014Error = new DOMException('Quota');
       Object.defineProperty(code1014Error, 'code', { value: 1014 });
       expect(isQuotaExceededError(code1014Error)).toBe(true);
-      expect(isQuotaExceededError(new Error('otro'))).toBe(false);
+    });
 
-      const originalDOMException = globalThis.DOMException;
+    it('debe retornar false en isQuotaExceededError cuando el error no es DOMException', () => {
+      expect(isQuotaExceededError(new Error('otro'))).toBe(false);
+    });
+
+    it('debe retornar false en isQuotaExceededError cuando DOMException no está disponible', () => {
+      const ffQuota = new DOMException('Quota', 'NS_ERROR_DOM_QUOTA_REACHED');
       Object.defineProperty(globalThis, 'DOMException', {
         value: undefined,
         configurable: true,
       });
       expect(isQuotaExceededError(ffQuota)).toBe(false);
-      Object.defineProperty(globalThis, 'DOMException', {
-        value: originalDOMException,
-        configurable: true,
-      });
+    });
 
+    it('debe lanzar STORAGE_UNAVAILABLE ante un error genérico de escritura en setItem', () => {
       jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new Error('Fallo desconocido');
       });
 
-      try {
-        service.set('clave', 'valor');
-        fail('Debió lanzar StorageError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(StorageError);
-        expect((error as StorageError).code).toBe('STORAGE_UNAVAILABLE');
-      }
+      expect(() => service.set('clave', 'valor')).toThrow(StorageError);
+      expect(() => service.set('clave', 'valor')).toThrow(
+        expect.objectContaining({ code: 'STORAGE_UNAVAILABLE' }),
+      );
     });
 
-    it('debe lanzar STORAGE_UNAVAILABLE cuando localStorage es undefined o lanza excepción al acceder', () => {
-      const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
-
+    it('debe lanzar STORAGE_UNAVAILABLE cuando localStorage es undefined', () => {
       Object.defineProperty(globalThis, 'localStorage', {
         get: () => undefined,
         configurable: true,
       });
-      expect(() => service.get('x')).toThrow(StorageError);
 
+      expect(() => service.get('x')).toThrow(StorageError);
+      expect(() => service.get('x')).toThrow(
+        expect.objectContaining({ code: 'STORAGE_UNAVAILABLE' }),
+      );
+    });
+
+    it('debe lanzar STORAGE_UNAVAILABLE cuando localStorage lanza excepción al acceder', () => {
       Object.defineProperty(globalThis, 'localStorage', {
         get: () => {
           throw new Error('Access denied');
         },
         configurable: true,
       });
-      expect(() => service.get('x')).toThrow(StorageError);
 
-      if (originalDescriptor) {
-        Object.defineProperty(globalThis, 'localStorage', originalDescriptor);
-      }
+      expect(() => service.get('x')).toThrow(StorageError);
+      expect(() => service.get('x')).toThrow(
+        expect.objectContaining({ code: 'STORAGE_UNAVAILABLE' }),
+      );
     });
   });
 });
